@@ -1,0 +1,156 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.title {
+  color: var(--clr-text);
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  color: var(--clr-text);
+  margin: 0;
+  font-size: 14px;
+}
+
+.searchContainer {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.searchInput {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 14px;
+  outline: none;
+}
+
+.actionHeader {
+  text-align: right;
+}
+
+.kodeText {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.nameText {
+  color: #f8fafc;
+  font-weight: 500;
+}
+
+.categoryBadge {
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stokTextWarning {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.stokTextNormal {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.priceText {
+  color: #cbd5e1;
+}
+
+.statusBadge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusTersedia {
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+}
+
+.statusHabis {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+}
+
+.actionCell {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.actionBtn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.emptyText {
+  text-align: center;
+  color: #64748b;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroupFlex {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.formLabel {
+  color: var(--clr-text-light);
+  font-size: 14px;
+}
+
+.formInput {
+  background: #0f172a;
+  border: 1px solid #ffffff14;
+  padding: 10px;
+  border-radius: 8px;
+  color: var(--clr-text-light);
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}

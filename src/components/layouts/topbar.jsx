@@ -14,11 +14,19 @@ function TopBar({ halamanAktif }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
+    const username = user && typeof user.username === 'string' ? user.username : '';
+    
+    const roleMap = {
+        administrator: "Administrator",
+        staff: "Staff Gudang"
+    };
+    const role = user && typeof user.role === 'string' ? (roleMap[user.role.toLowerCase()] || user.role) : '';
+
     const sekarang = new Date().toLocaleDateString('id-ID', {
         weekday: 'long',
-        year: 'numeric',
+        day: 'numeric',
         month: 'long',
-        day: 'numeric'
+        year: 'numeric'
     });
 
     // Menutup dropdown jika user mengklik di luar area menu dropdown
@@ -36,26 +44,24 @@ function TopBar({ halamanAktif }) {
 
     const handleLogout = () => {
         setIsOpen(false);
-        if (confirm("Apakah Anda yakin ingin keluar?")) {
-            logout();
-        }
+        logout();
     };
 
     return (
         <header className={styles.topbar}>
-            <div className={styles.kiri}>
-                <h1 className={styles.judulHalaman}>{JudulHalaman[halamanAktif] || 'e-Gudang'}</h1>
-                <p className={styles.tanggal}>{sekarang}</p>
+            <div className={styles.left}>
+                <h1 className={styles.titlePage}>{JudulHalaman[halamanAktif] || 'e-Gudang'}</h1>
+                <p className={styles.date}>{sekarang}</p>
             </div>
 
-            <div className={styles.kanan} ref={dropdownRef}>
-                <div className={styles.profileToggle} onClick={() => setIsOpen(!isOpen)}>
+            <div className={styles.right} ref={dropdownRef}>
+                <div id="profile-toggle" className={styles.profileToggle} onClick={() => setIsOpen(!isOpen)}>
                     <div className={styles.avatar}>
-                        {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
+                        {username ? username.charAt(0).toUpperCase() : 'H'}
                     </div>
                     <div className={styles.userInfo}>
-                        <span className={styles.userName}>{user?.username || 'Pengguna'}</span>
-                        <span className={styles.userRole}>{user?.role || 'Staff'}</span>
+                        <span className={styles.userName}>{username || 'Pengguna'}</span>
+                        <span className={styles.userRole}>{role || 'Staff'}</span>
                     </div>
                     <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}>▼</span>
                 </div>
@@ -64,19 +70,19 @@ function TopBar({ halamanAktif }) {
                 {isOpen && (
                     <div className={styles.dropdown}>
                         <div className={styles.dropdownHeader}>
-                            <p className={styles.dropdownName}>{user?.username || 'Pengguna'}</p>
-                            <p className={styles.dropdownRole}>{user?.role || 'Staff'}</p>
+                            <p className={styles.dropdownName}>{username || 'Pengguna'}</p>
+                            <p className={styles.dropdownRole}>{role || 'Staff'}</p>
                         </div>
                         <div className={styles.divider}></div>
-                        
-                        <button 
-                            className={styles.dropdownItem} 
+
+                        <button
+                            className={styles.dropdownItem}
                             onClick={() => { setIsOpen(false); alert('Fitur Profil sedang dikembangkan!'); }}
                         >
                             👤 Info Profil
                         </button>
-                        
-                        <button className={`${styles.dropdownItem} ${styles.logoutItem}`} onClick={handleLogout}>
+
+                        <button id="logout-button" className={`${styles.dropdownItem} ${styles.logoutItem}`} onClick={handleLogout}>
                             🚪 Keluar (Logout)
                         </button>
                     </div>

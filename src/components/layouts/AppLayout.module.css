@@ -6,6 +6,7 @@
 .main {
     flex: 1;
     display: flex;
+    background-color: var(--clr-sub-bg);
     flex-direction: column;
     min-width: 0;
     overflow: hidden;

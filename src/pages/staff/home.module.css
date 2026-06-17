@@ -1,0 +1,100 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.title {
+    color: var(--clr-text);
+    margin: 0 0 8px 0;
+}
+
+.subtitle {
+    color: var(--clr-text);
+    margin: 0;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.krisisCard {
+    border-color: rgba(234, 179, 8, 0.4) !important;
+}
+
+.instructionCard {
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.instructionTitle {
+    color: #38bdf8;
+    margin: 0 0 10px 0;
+}
+
+.instructionList {
+    color: #cbd5e1;
+    font-size: 14px;
+    margin: 0;
+    padding-left: 20px;
+    line-height: 1.6;
+}
+
+.tableSection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tableTitle {
+    color: #f8fafc;
+    margin: 0;
+}
+
+.emptyMessage {
+    color: #64748b;
+    margin: 0;
+}
+
+.codeCol {
+    font-weight: 600;
+    color: #38bdf8;
+}
+
+.nameCol {
+    color: #f8fafc;
+}
+
+.stockCol {
+    font-weight: 500;
+}
+
+.stockKritis {
+    color: #f87171;
+}
+
+.stockPeringatan {
+    color: #fbbf24;
+}
+
+.badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badgeKritis {
+    background: #ef444433;
+    color: #f87171;
+}
+
+.badgeAman {
+    background: #08ea4033;
+    color: #24fb64;
+}

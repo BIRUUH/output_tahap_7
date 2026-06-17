@@ -1,13 +1,17 @@
+import { useAuth } from "../../context/AuthContext";
 import styles from "./sidebar.module.css";
 
-const navItems = [
-  { key: "dashboard", label: "Dashboard" },
-  { key: "barang", label: "Daftar Barang" },
-  { key: "kategori", label: "Kategori Barang" },
-  { key: "laporan", label: "Daftar Laporan" },
-];
-
 export default function Sidebar({ halamanAktif, onNavigasi }) {
+  const { user } = useAuth();
+  const role = user?.role?.toLowerCase() || "";
+
+  const navItems = [
+    { key: "dashboard", label: "Dashboard" },
+    { key: "barang", label: "Daftar Barang" },
+    ...(role === "administrator" ? [{ key: "kategori", label: "Kategori Barang" }] : []),
+    { key: "laporan", label: "Daftar Laporan" },
+  ];
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.merk}>
@@ -19,7 +23,6 @@ export default function Sidebar({ halamanAktif, onNavigasi }) {
 
       {/* Navigasi */}
       <nav className={styles.nav}>
-        <p className={styles.navLabel}>{"MENU"}</p>
         {navItems.map((item) => (
           <button
             key={item.key}

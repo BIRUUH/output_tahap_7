@@ -1,0 +1,78 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.title {
+  color: var(--clr-text);
+  margin: 0 0 4px 0;
+}
+.subtitle {
+  color: var(--clr-text);
+  margin: 0;
+  font-size: 14px;
+}
+.actionHeader {
+  text-align: right;
+}
+.idText {
+  color: var(--clr-text);
+  font-weight: 600;
+}
+.nameText {
+  color: var(--clr-text);
+  font-weight: 500;
+}
+.actionCell {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.actionBtn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.emptyText {
+  text-align: center;
+  color: var(--clr-text);
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.formLabel {
+  color: var(--clr-text-light);
+  font-size: 14px;
+}
+.formInput {
+  background: #0f172a;
+  border: 1px solid #ffffff14;
+  padding: 10px;
+  border-radius: 8px;
+  color: var(--clr-text-light);
+}
+.formTextarea {
+  background: #0f172a;
+  border: 1px solid #ffffff14;
+  padding: 10px;
+  border-radius: 8px;
+  color: var(--clr-text-light);
+  font-family: inherit;
+}
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}

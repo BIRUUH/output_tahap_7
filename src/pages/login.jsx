@@ -14,6 +14,7 @@ export default function Login() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    // Jika pengguna sudah login, redirect ke halaman asal atau ke dashboard
     const targetRedirect = location.state?.from?.pathname || "/";
 
     useEffect(() => {
@@ -22,6 +23,7 @@ export default function Login() {
         }
     }, [isAuthenticated, navigate, targetRedirect]);
 
+    // Fungsi untuk handling submit form login
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
