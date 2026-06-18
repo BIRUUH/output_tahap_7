@@ -2,10 +2,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from "react";
 import * as api from "../services/api";
+import { useAuth } from "./AuthContext";
 
 const InventoryContext = createContext(null);
 
 export const InventoryProvider = ({ children }) => {
+    const { isAuthenticated } = useAuth();
     const [kategoriList, setKategoriList] = useState([]);
     const [barangList, setBarangList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -29,10 +31,15 @@ export const InventoryProvider = ({ children }) => {
         }
     };
 
-    // untuk memanggil refreshData saat komponen pertama kali dirender
+    // Panggil refreshData ketika status login berubah menjadi true
     useEffect(() => {
-        refreshData();
-    }, []);
+        if (isAuthenticated) {
+            refreshData();
+        } else {
+            setKategoriList([]);
+            setBarangList([]);
+        }
+    }, [isAuthenticated]);
 
     // CRUD KATEGORI
     const addKategori = async (newCat) => {
