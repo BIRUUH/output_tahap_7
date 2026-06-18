@@ -154,3 +154,50 @@
   gap: 10px;
   margin-top: 10px;
 }
+
+.filterBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.searchForm {
+    display: flex;
+    gap: 8px;
+    flex: 1 1 350px;
+    max-width: 450px;
+}
+
+.filterGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    flex: 2 1 auto;
+}
+
+.filterSelect {
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    min-width: 140px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.filterSelect:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+
+.resetBtn {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+}

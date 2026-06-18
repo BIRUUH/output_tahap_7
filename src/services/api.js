@@ -76,8 +76,8 @@ export const deleteKategori = async (id) => {
 
 // Endpoint API untuk barang (CRUD)
 
-export const fetchBarang = async () => {
-    const response = await inventoryApi.get("/barang");
+export const fetchBarang = async (params) => {
+    const response = await inventoryApi.get("/barang", { params });
     return response.data;
 };
 

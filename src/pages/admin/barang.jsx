@@ -1,22 +1,43 @@
-import { useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useInventory } from "../../context/InventoryContext";
+import { fetchBarang } from "../../services/api";
 import Table from "../../components/ui/Table";
 import Button from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
 import Alert from "../../components/ui/Alert";
 import Loader from "../../components/ui/Loader";
+import Pagination from "../../components/ui/Pagination";
 import styles from "./barang.module.css";
 
 export default function Barang() {
     const { 
-        barangList, 
         kategoriList, 
-        loading, 
+        loading: contextLoading, 
         error: contextError, 
         addBarang, 
         updateBarang, 
         deleteBarang 
     } = useInventory();
+
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Query parameters dari URL
+    const query = searchParams.get("q") || "";
+    const kategoriIdParam = searchParams.get("kategori") || "";
+    const statusParam = searchParams.get("status") || "";
+    const sortParam = searchParams.get("sort") || "";
+    const pageParam = parseInt(searchParams.get("page") || "1", 10);
+
+    // State lokal untuk search input (agar mendukung debounce)
+    const [searchInput, setSearchInput] = useState(query);
+
+    // State lokal untuk data barang dari server (server-side logic)
+    const [adminBarangList, setAdminBarangList] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
+    const [localLoading, setLocalLoading] = useState(false);
+    const [localFetchError, setLocalFetchError] = useState("");
 
     // Modal states
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -31,9 +52,153 @@ export default function Barang() {
     const [harga, setHarga] = useState("");
     const [lokasi, setLokasi] = useState("");
     const [status, setStatus] = useState("Tersedia");
-    const [searchQuery, setSearchQuery] = useState("");
     const [localError, setLocalError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Pagination Constants
+    const itemsPerPage = 5;
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+    const activePage = Math.min(Math.max(1, pageParam), totalPages);
+
+    // Menghubungkan input lokal dengan parameter pencarian di URL jika parameter URL diubah dari luar (misal reset)
+    useEffect(() => {
+        setSearchInput(query);
+    }, [query]);
+
+    // Fungsi fetch data barang server-side
+    const fetchAdminData = useCallback(async () => {
+        setLocalLoading(true);
+        setLocalFetchError("");
+        try {
+            // Parameter untuk data yang dipaginasi & diurutkan
+            const paginatedParams = {
+                page: activePage,
+                limit: itemsPerPage,
+            };
+            if (query.trim()) paginatedParams.search = query.trim();
+            if (kategoriIdParam) paginatedParams.kategoriId = kategoriIdParam;
+            if (statusParam) paginatedParams.status = statusParam;
+            if (sortParam) {
+                const [field, direction] = sortParam.split("-");
+                paginatedParams.sortBy = field;
+                paginatedParams.order = direction;
+            }
+
+            // Parameter untuk menghitung total item yang cocok (tanpa limit & page)
+            const countParams = {};
+            if (query.trim()) countParams.search = query.trim();
+            if (kategoriIdParam) countParams.kategoriId = kategoriIdParam;
+            if (statusParam) countParams.status = statusParam;
+
+            // Panggil API secara paralel
+            const [paginatedData, totalData] = await Promise.all([
+                fetchBarang(paginatedParams),
+                fetchBarang(countParams)
+            ]);
+
+            setAdminBarangList(paginatedData || []);
+            setTotalItems(totalData ? totalData.length : 0);
+        } catch (err) {
+            setLocalFetchError(err.message || "Gagal memuat data barang dari server.");
+        } finally {
+            setLocalLoading(false);
+        }
+    }, [query, kategoriIdParam, statusParam, sortParam, activePage]);
+
+    // Jalankan fetch setiap kali query parameter URL berubah
+    useEffect(() => {
+        fetchAdminData();
+    }, [fetchAdminData]);
+
+    // Mengamankan nomor halaman di URL agar selalu valid
+    useEffect(() => {
+        if (pageParam !== activePage) {
+            setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("page", String(activePage));
+                return next;
+            }, { replace: true });
+        }
+    }, [pageParam, activePage, setSearchParams]);
+
+    // Debounce search input dengan delay 2000ms
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            if (searchInput.trim() !== query) {
+                setSearchParams((prev) => {
+                    const next = new URLSearchParams(prev);
+                    if (searchInput.trim()) {
+                        next.set("q", searchInput.trim());
+                    } else {
+                        next.delete("q");
+                    }
+                    next.set("page", "1"); // Reset ke halaman pertama saat mencari
+                    return next;
+                });
+            }
+        }, 2000);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchInput, query, setSearchParams]);
+
+    // Handler Filter Kategori
+    const handleKategoriFilterChange = (val) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (val) {
+                next.set("kategori", val);
+            } else {
+                next.delete("kategori");
+            }
+            next.set("page", "1");
+            return next;
+        });
+    };
+
+    // Handler Filter Status
+    const handleStatusFilterChange = (val) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (val) {
+                next.set("status", val);
+            } else {
+                next.delete("status");
+            }
+            next.set("page", "1");
+            return next;
+        });
+    };
+
+    // Handler Sorting
+    const handleSortChange = (val) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (val) {
+                next.set("sort", val);
+            } else {
+                next.delete("sort");
+            }
+            return next;
+        });
+    };
+
+    // Handler Page Change
+    const handlePageChange = (newPage) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set("page", String(newPage));
+            return next;
+        });
+    };
+
+    // Handler Reset Filter
+    const handleReset = () => {
+        setSearchInput("");
+        setSearchParams({});
+    };
+
+    // Kondisi tombol reset aktif
+    const isFilterActive = !!(query || kategoriIdParam || statusParam || sortParam || pageParam > 1);
 
     // Fungsi untuk membuka modal tambah barang dengan reset form
     const handleOpenAdd = () => {
@@ -64,17 +229,14 @@ export default function Barang() {
 
     // Fungsi validasi form sebelum submit
     const validateForm = () => {
-        // cek input kosong dan trim untuk namaBarang, satuan, lokasi
         if (!namaBarang.trim() || !stok || !satuan.trim() || !harga || !lokasi.trim()) {
             setLocalError("Semua field wajib diisi!");
             return false;
         }
-        // cek angka negatif
         if (isNaN(stok) || Number(stok) < 0) {
             setLocalError("Stok harus berupa angka positif!");
             return false;
         }
-        // cek angka negatif
         if (isNaN(harga) || Number(harga) < 0) {
             setLocalError("Harga harus berupa angka positif!");
             return false;
@@ -100,6 +262,8 @@ export default function Barang() {
                 status
             });
             setIsAddOpen(false);
+            handleReset(); // Reset pencarian ke halaman pertama agar melihat data terbaru
+            fetchAdminData();
         } catch (err) {
             setLocalError(err.message || "Gagal menyimpan barang.");
         } finally {
@@ -124,6 +288,7 @@ export default function Barang() {
                 status
             });
             setIsEditOpen(false);
+            fetchAdminData();
         } catch (err) {
             setLocalError(err.message || "Gagal memperbarui barang.");
         } finally {
@@ -136,19 +301,12 @@ export default function Barang() {
         if (confirm(`Apakah Anda yakin ingin menghapus barang "${name}"?`)) {
             try {
                 await deleteBarang(id);
+                fetchAdminData();
             } catch (err) {
                 alert(err.message || "Gagal menghapus barang.");
             }
         }
     };
-
-    // Filter barang berdasarkan query pencarian
-    const filteredBarang = barangList.filter((item) => {
-        const keyword = searchQuery.toLowerCase().trim();
-        const matchesName = item.nama_barang?.toLowerCase().includes(keyword);
-        const matchesKode = item.kode?.toLowerCase().includes(keyword);
-        return matchesName || matchesKode;
-    });
 
     // Fungsi untuk format harga ke dalam format Rupiah
     const formatCurrency = (value) => {
@@ -166,7 +324,7 @@ export default function Barang() {
                     <h2 className={styles.title}>Manajemen Data Barang</h2>
                     <p className={styles.subtitle}>Kelola data inventaris gudang secara lengkap (CRUD).</p>
                 </div>
-                <Button onClick={handleOpenAdd} variant="primary" disabled={loading}>
+                <Button onClick={handleOpenAdd} variant="primary" disabled={localLoading || contextLoading}>
                     ➕ Tambah Barang Baru
                 </Button>
             </div>
@@ -176,87 +334,160 @@ export default function Barang() {
                 <Alert type="error" message={contextError} />
             )}
 
-            {/* Filter pencarian */}
-            <div className={styles.searchContainer}>
-                <input
-                    type="text"
-                    placeholder="Cari barang berdasarkan nama atau kode..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={styles.searchInput}
-                />
+            {/* Menampilkan pesan error lokal dari fetch */}
+            {localFetchError && (
+                <Alert type="error" message={localFetchError} />
+            )}
+
+            {/* Toolbar Pencarian & Filter */}
+            <div className={styles.filterBar}>
+                {/* Search Input (Debounced) */}
+                <div className={styles.searchForm}>
+                    <input
+                        type="text"
+                        placeholder="Cari berdasarkan nama atau kode..."
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        className={styles.searchInput}
+                    />
+                </div>
+
+                {/* Filter & Sorting Group */}
+                <div className={styles.filterGroup}>
+                    {/* Filter Kategori */}
+                    <select
+                        value={kategoriIdParam}
+                        onChange={(e) => handleKategoriFilterChange(e.target.value)}
+                        className={styles.filterSelect}
+                    >
+                        <option value="">Semua Kategori</option>
+                        {kategoriList.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.nama_kategori}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Filter Status */}
+                    <select
+                        value={statusParam}
+                        onChange={(e) => handleStatusFilterChange(e.target.value)}
+                        className={styles.filterSelect}
+                    >
+                        <option value="">Semua Status</option>
+                        <option value="Tersedia">Tersedia</option>
+                        <option value="Habis">Habis</option>
+                    </select>
+
+                    {/* Sorting Dropdown */}
+                    <select
+                        value={sortParam}
+                        onChange={(e) => handleSortChange(e.target.value)}
+                        className={styles.filterSelect}
+                    >
+                        <option value="">Urutkan Data</option>
+                        <option value="nama_barang-asc">Nama (A-Z)</option>
+                        <option value="nama_barang-desc">Nama (Z-A)</option>
+                        <option value="stok-asc">Stok (Terkecil)</option>
+                        <option value="stok-desc">Stok (Terbesar)</option>
+                        <option value="harga-asc">Harga (Termurah)</option>
+                        <option value="harga-desc">Harga (Termahal)</option>
+                    </select>
+
+                    {/* Tombol Reset Filter */}
+                    {isFilterActive && (
+                        <Button
+                            onClick={handleReset}
+                            variant="secondary"
+                            className={styles.resetBtn}
+                        >
+                            🔄 Reset
+                        </Button>
+                    )}
+                </div>
             </div>
 
-            {loading && barangList.length === 0 ? (
+            {localLoading && adminBarangList.length === 0 ? (
                 <Loader text="Mengambil data barang..." />
             ) : (
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>KODE</th>
-                            <th>NAMA BARANG</th>
-                            <th>KATEGORI</th>
-                            <th>LOKASI</th>
-                            <th>STOK</th>
-                            <th>SATUAN</th>
-                            <th>HARGA</th>
-                            <th>STATUS</th>
-                            <th className={styles.actionHeader}>AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredBarang.map((item) => {
-                            const categoryName = kategoriList.find((c) => c.id === item.kategoriId)?.nama_kategori || "Tanpa Kategori";
-                            const isTersedia = item.status === "Tersedia";
-
-                            return (
-                                <tr key={item.id}>
-                                    <td className={styles.kodeText}>{item.kode || `BRG-${item.id}`}</td>
-                                    <td className={styles.nameText}>{item.nama_barang}</td>
-                                    <td>
-                                        <span className={styles.categoryBadge}>
-                                            {categoryName}
-                                        </span>
-                                    </td>
-                                    <td>{item.lokasi}</td>
-                                    <td className={item.stok < 10 ? styles.stokTextWarning : styles.stokTextNormal}>
-                                        {item.stok} {item.stok < 10 && "⚠️"}
-                                    </td>
-                                    <td>{item.satuan}</td>
-                                    <td className={styles.priceText}>{formatCurrency(item.harga)}</td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${isTersedia ? styles.statusTersedia : styles.statusHabis}`}>
-                                            {item.status || "Tersedia"}
-                                        </span>
-                                    </td>
-                                    <td className={styles.actionCell}>
-                                        <Button 
-                                            onClick={() => handleOpenEdit(item)} 
-                                            variant="secondary" 
-                                            className={styles.actionBtn}
-                                            disabled={loading}
-                                        >
-                                            ✏️ Edit
-                                        </Button>
-                                        <Button 
-                                            onClick={() => handleDelete(item.id, item.nama_barang)} 
-                                            variant="danger" 
-                                            className={styles.actionBtn}
-                                            disabled={loading}
-                                        >
-                                            🗑️ Hapus
-                                        </Button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        {filteredBarang.length === 0 && (
+                <>
+                    <Table>
+                        <thead>
                             <tr>
-                                <td colSpan="9" className={styles.emptyText}><h3>Tidak ditemukan data barang.</h3></td>
+                                <th>KODE</th>
+                                <th>NAMA BARANG</th>
+                                <th>KATEGORI</th>
+                                <th>LOKASI</th>
+                                <th>STOK</th>
+                                <th>SATUAN</th>
+                                <th>HARGA</th>
+                                <th>STATUS</th>
+                                <th className={styles.actionHeader}>AKSI</th>
                             </tr>
-                        )}
-                    </tbody>
-                </Table>
+                        </thead>
+                        <tbody>
+                            {adminBarangList.map((item) => {
+                                const categoryName = kategoriList.find((c) => c.id === item.kategoriId)?.nama_kategori || "Tanpa Kategori";
+                                const isTersedia = item.status === "Tersedia";
+
+                                return (
+                                    <tr key={item.id}>
+                                        <td className={styles.kodeText}>{item.kode || `BRG-${item.id}`}</td>
+                                        <td className={styles.nameText}>{item.nama_barang}</td>
+                                        <td>
+                                            <span className={styles.categoryBadge}>
+                                                {categoryName}
+                                            </span>
+                                        </td>
+                                        <td>{item.lokasi}</td>
+                                        <td className={item.stok < 10 ? styles.stokTextWarning : styles.stokTextNormal}>
+                                            {item.stok} {item.stok < 10 && "⚠️"}
+                                        </td>
+                                        <td>{item.satuan}</td>
+                                        <td className={styles.priceText}>{formatCurrency(item.harga)}</td>
+                                        <td>
+                                            <span className={`${styles.statusBadge} ${isTersedia ? styles.statusTersedia : styles.statusHabis}`}>
+                                                {item.status || "Tersedia"}
+                                            </span>
+                                        </td>
+                                        <td className={styles.actionCell}>
+                                            <Button 
+                                                onClick={() => handleOpenEdit(item)} 
+                                                variant="secondary" 
+                                                className={styles.actionBtn}
+                                                disabled={localLoading || contextLoading}
+                                            >
+                                                ✏️ Edit
+                                            </Button>
+                                            <Button 
+                                                onClick={() => handleDelete(item.id, item.nama_barang)} 
+                                                variant="danger" 
+                                                className={styles.actionBtn}
+                                                disabled={localLoading || contextLoading}
+                                            >
+                                                🗑️ Hapus
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            {adminBarangList.length === 0 && (
+                                <tr>
+                                    <td colSpan="9" className={styles.emptyText}><h3>Tidak ditemukan data barang.</h3></td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </Table>
+
+                    {/* Pagination */}
+                    <Pagination
+                        currentPage={activePage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        totalItems={totalItems}
+                        itemsPerPage={itemsPerPage}
+                    />
+                </>
             )}
 
             {/* Modal Tambah Barang */}
