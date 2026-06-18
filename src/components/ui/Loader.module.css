@@ -31,7 +31,7 @@
 }
 
 .text {
-    color: #94a3b8;
+    color: var(--clr-text);
     font-size: 14px;
     font-weight: 500;
     margin: 0;
