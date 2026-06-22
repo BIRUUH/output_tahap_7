@@ -23,14 +23,14 @@ export default function Barang() {
 
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Query parameters dari URL
+    // Ambil nilai dari parameters di URL
     const query = searchParams.get("q") || "";
     const kategoriIdParam = searchParams.get("kategori") || "";
     const statusParam = searchParams.get("status") || "";
     const sortParam = searchParams.get("sort") || "";
     const pageParam = parseInt(searchParams.get("page") || "1", 10);
 
-    // State lokal untuk search input (agar mendukung debounce)
+    // State lokal untuk search input (debounce)
     const [searchInput, setSearchInput] = useState(query);
 
     // State lokal untuk data barang dari server (server-side logic)
@@ -39,11 +39,11 @@ export default function Barang() {
     const [localLoading, setLocalLoading] = useState(false);
     const [localFetchError, setLocalFetchError] = useState("");
 
-    // Modal states
+    // State Modal
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
 
-    // Form states
+    // State Form
     const [selectedId, setSelectedId] = useState(null);
     const [namaBarang, setNamaBarang] = useState("");
     const [kategoriId, setKategoriId] = useState("");
@@ -55,12 +55,12 @@ export default function Barang() {
     const [localError, setLocalError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Pagination Constants
+    // Constants Pagination
     const itemsPerPage = 5;
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
     const activePage = Math.min(Math.max(1, pageParam), totalPages);
 
-    // Menghubungkan input lokal dengan parameter pencarian di URL jika parameter URL diubah dari luar (misal reset)
+    // Menghubungkan input lokal dengan parameter pencarian di URL jika parameter URL diubah dari luar
     useEffect(() => {
         setSearchInput(query);
     }, [query]);
@@ -136,7 +136,7 @@ export default function Barang() {
                     return next;
                 });
             }
-        }, 2000);
+        }, 1000);
 
         return () => clearTimeout(delayDebounceFn);
     }, [searchInput, query, setSearchParams]);
@@ -244,7 +244,7 @@ export default function Barang() {
         return true;
     };
 
-    // Fungsi untuk handling submit tambah dan edit barang
+    // Fungsi untuk handling submit tambah barang
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -271,6 +271,7 @@ export default function Barang() {
         }
     };
 
+    // Fungsi untuk handling submit edit barang
     const handleEdit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -339,7 +340,6 @@ export default function Barang() {
                 <Alert type="error" message={localFetchError} />
             )}
 
-            {/* Toolbar Pencarian & Filter */}
             <div className={styles.filterBar}>
                 {/* Search Input (Debounced) */}
                 <div className={styles.searchForm}>

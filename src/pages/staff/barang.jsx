@@ -38,7 +38,7 @@ export default function Barang() {
         setCurrentPage(1);
     };
 
-    // 1. Client-Side Filtering
+    // Client-Side Filtering
     let filteredBarang = barangList.filter((item) => {
         const keyword = searchQuery.toLowerCase().trim();
         const matchesSearch = keyword
@@ -57,7 +57,7 @@ export default function Barang() {
         return matchesSearch && matchesKategori && matchesStatus;
     });
 
-    // 2. Client-Side Sorting
+    // Client-Side Sorting
     if (sortBy) {
         const [field, order] = sortBy.split("-");
         filteredBarang = [...filteredBarang].sort((a, b) => {
@@ -82,7 +82,7 @@ export default function Barang() {
         });
     }
 
-    // 3. Client-Side Pagination
+    // Client-Side Pagination
     const totalItems = filteredBarang.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     
